@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Rapporto di Intervento - Modello</title>
+  <style>
+    :root{--accent:#2563eb;--muted:#6b7280;--card:#ffffff;--bg:#f3f4f6}
+    html,body{height:100%;margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial}
+    body{background:var(--bg);padding:24px;color:#111827}
+    .container{max-width:1100px;margin:0 auto}
+    .card{background:var(--card);border-radius:12px;padding:18px 20px;box-shadow:0 6px 18px rgba(15,23,42,0.06)}
+    header{display:flex;gap:16px;align-items:center;margin-bottom:12px;justify-content:space-between}
+    h1{font-size:18px;margin:0}
+    .flex{display:flex;gap:12px}
+    .col{flex:1}
+    label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+    input[type="text"], input[type="date"], input[type="number"], select, textarea{width:100%;padding:8px 10px;border:1px solid #e5e7eb;border-radius:8px;font-size:14px}
+    textarea{min-height:72px;resize:vertical}
+    .row{display:flex;gap:12px}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th,td{padding:8px 10px;border-bottom:1px solid #eef2f7;text-align:left;font-size:14px}
+    th{background:#fbfdff;font-weight:600}
+    .text-right{text-align:right}
+    .muted{color:var(--muted);font-size:13px}
+    .btn{background:var(--accent);color:white;padding:8px 12px;border-radius:8px;border:0;cursor:pointer}
+    .btn.ghost{background:transparent;color:var(--accent);border:1px solid #dbeafe}
+    .small{font-size:13px;padding:6px 8px}
+    .actions{display:flex;gap:8px;align-items:center}
+    .total-card{margin-top:12px;padding:12px;border-radius:10px;background:#f8fafc}
+    .total-card div{margin:4px 0}
+    .print-hide{display:inline-block}
+    footer{margin-top:40px;display:flex;justify-content:space-between;gap:20px;align-items:flex-start}
+    .signature{flex:1;text-align:center}
+    canvas.signature-pad{border:1px solid #ccc;border-radius:6px;width:100%;height:150px;touch-action:none;background:white}
+    .signature-line{margin-top:6px;font-size:13px;color:var(--muted)}
+    @media print{.print-hide{display:none}body{padding:0} .card{box-shadow:none;border-radius:0}}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card" id="reportCard">
+      <header>
+        <div style="flex:1">
+          <h1>Rapporto di Intervento</h1>
+          <div class="muted">Compilare i campi sottostanti</div>
+        </div>
+        <div style="text-align:right">
+          <img src="logo.jpg" alt="Logo" style="max-height:60px;object-fit:contain" />
+        </div>
+        <div class="actions print-hide">
+          <button class="btn small" onclick="print()">Stampa / Salva PDF</button>
+          <button class="btn small" onclick="exportJSON()">Esporta JSON</button>
+          <button class="btn small ghost" onclick="clearForm()">Azzera</button>
+        </div>
+      </header>
+
+      <!-- Dati intervento -->
+      <div class="row">
+        <div class="col">
+          <label>Tipo Macchina</label>
+          <input type="text" id="tipoMacchina" />
+        </div>
+        <div class="col">
+          <label>Modello</label>
+          <input type="text" id="modello" />
+        </div>
+        <div class="col">
+          <label>Data Intervento</label>
+          <input type="date" id="dataIntervento" />
+        </div>
+      </div>
+
+      <!-- Cliente -->
+      <div class="row" style="margin-top:12px">
+        <div class="col">
+          <label>Tipo Cliente</label>
+          <select id="tipoCliente">
+            <option value="privato">Privato</option>
+            <option value="piva">P.IVA</option>
+          </select>
+        </div>
+        <div class="col">
+          <label>Cliente / Ragione sociale</label>
+          <input type="text" id="cliente" />
+        </div>
+      </div>
+
+      <!-- Intervento -->
+      <div style="margin-top:12px">
+        <label>Difetto riscontrato</label>
+        <textarea id="difetto"></textarea>
+      </div>
+      <div style="margin-top:12px">
+        <label>Lavoro eseguito</label>
+        <textarea id="lavoro"></textarea>
+      </div>
+
+      <!-- Articoli -->
+      <h3 style="margin-top:20px">Articoli e servizi</h3>
+      <table id="articoliTable">
+        <thead>
+          <tr>
+            <th>Articolo/Servizio</th>
+            <th>Q.tà</th>
+            <th>Prezzo Unitario (€)</th>
+            <th class="text-right">Totale (€)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><input type="text" /></td>
+            <td><input type="number" value="1" min="1" /></td>
+            <td><input type="number" value="0" min="0" step="0.01" /></td>
+            <td class="text-right">0.00</td>
+          </tr>
+        </tbody>
+      </table>
+      <button class="btn small ghost print-hide" onclick="addRow('articoliTable')">+ Aggiungi articolo</button>
+
+      <!-- Ore e km -->
+      <h3 style="margin-top:20px">Ore e viaggio</h3>
+      <table id="extraTable">
+        <thead>
+          <tr>
+            <th>Descrizione</th>
+            <th>Quantità</th>
+            <th>Prezzo Unitario (€)</th>
+            <th class="text-right">Totale (€)</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Ore di lavoro</td>
+            <td><input type="number" value="0" min="0" step="0.5" /></td>
+            <td><input type="number" value="0" min="0" step="0.01" /></td>
+            <td class="text-right">0.00</td>
+          </tr>
+          <tr>
+            <td>Km di viaggio</td>
+            <td><input type="number" value="0" min="0" /></td>
+            <td><input type="number" value="0" min="0" step="0.01" /></td>
+            <td class="text-right">0.00</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Totali -->
+      <div class="total-card">
+        <div>Imponibile: <span id="imponibile">0.00</span> €</div>
+        <div>IVA 22%: <span id="iva">0.00</span> €</div>
+        <div><b>Totale: <span id="totale">0.00</span> €</b></div>
+      </div>
+
+      <!-- Firme digitali -->
+      <footer>
+        <div class="signature">
+          <canvas id="signatureClient" class="signature-pad"></canvas>
+          <input type="hidden" id="signatureClientData" />
+          <div class="signature-line">Firma Cliente (digitale)</div>
+          <button class="btn small ghost print-hide" onclick="clearSignature('signatureClient')">Pulisci firma</button>
+        </div>
+        <div class="signature">
+          <canvas id="signatureTech" class="signature-pad"></canvas>
+          <input type="hidden" id="signatureTechData" />
+          <div class="signature-line">Firma Tecnico (digitale)</div>
+          <button class="btn small ghost print-hide" onclick="clearSignature('signatureTech')">Pulisci firma</button>
+        </div>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    // ===== Tabelle dinamiche =====
+    function addRow(tableId){
+      const table = document.getElementById(tableId).querySelector("tbody");
+      const row = table.rows[0].cloneNode(true);
+      row.querySelectorAll("input").forEach(input => {
+        input.value = input.type === "number" ? 0 : "";
+      });
+      row.querySelector("td:last-child").textContent = "0.00";
+      table.appendChild(row);
+      updateTotals();
+    }
+
+    // ===== Calcoli =====
+    function updateTotals(){
+      let imponibile = 0;
+
+      document.querySelectorAll("#articoliTable tbody tr").forEach(row=>{
+        const qty = parseFloat(row.cells[1].querySelector("input").value)||0;
+        const price = parseFloat(row.cells[2].querySelector("input").value)||0;
+        const total = qty*price;
+        row.cells[3].textContent = total.toFixed(2);
+        imponibile += total;
+      });
+
+      document.querySelectorAll("#extraTable tbody tr").forEach(row=>{
+        const qty = parseFloat(row.cells[1].querySelector("input").value)||0;
+        const price = parseFloat(row.cells[2].querySelector("input").value)||0;
+        const total = qty*price;
+        row.cells[3].textContent = total.toFixed(2);
+        imponibile += total;
+      });
+
+      const iva = imponibile*0.22;
+      const totale = imponibile+iva;
+      document.getElementById("imponibile").textContent = imponibile.toFixed(2);
+      document.getElementById("iva").textContent = iva.toFixed(2);
+      document.getElementById("totale").textContent = totale.toFixed(2);
+    }
+    document.addEventListener("input", updateTotals);
+
+    // ===== Firma digitale =====
+    function initSignaturePad(canvasId, hiddenId){
+      const canvas = document.getElementById(canvasId);
+      const hidden = document.getElementById(hiddenId);
+      const ctx = canvas.getContext('2d');
+      ctx.strokeStyle = '#000';
+      ctx.lineWidth = 2;
+      let drawing = false;
+
+      function resizeCanvas(){
+        const data = canvas.toDataURL();
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        const img = new Image();
+        img.src = data;
+        img.onload = ()=> ctx.drawImage(img,0,0);
+      }
+      window.addEventListener('resize', resizeCanvas);
+      resizeCanvas();
+
+      function start(e){ drawing = true; ctx.beginPath(); ctx.moveTo(getX(e), getY(e)); }
+      function draw(e){ if(!drawing) return; ctx.lineTo(getX(e), getY(e)); ctx.stroke(); updateHidden(); }
+      function end(){ drawing = false; updateHidden(); }
+
+      function getX(e){ return (e.touches? e.touches[0].clientX : e.clientX) - canvas.getBoundingClientRect().left; }
+      function getY(e){ return (e.touches? e.touches[0].clientY : e.clientY) - canvas.getBoundingClientRect().top; }
+
+      function updateHidden(){ hidden.value = canvas.toDataURL(); }
+
+      canvas.addEventListener('mousedown', start);
+      canvas.addEventListener('mousemove', draw);
+      canvas.addEventListener('mouseup', end);
+      canvas.addEventListener('mouseleave', end);
+      canvas.addEventListener('touchstart', start);
+      canvas.addEventListener('touchmove', draw);
+      canvas.addEventListener('touchend', end);
+    }
+
+    function clearSignature(id){
+      const canvas = document.getElementById(id);
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      const hidden = document.getElementById(id+"Data");
+      if(hidden) hidden.value = "";
+    }
+
+    // ===== Export JSON =====
+    function exportJSON(){
+      const data = {
+        tipoMacchina: document.getElementById("tipoMacchina").value,
+        modello: document.getElementById("modello").value,
+        dataIntervento: document.getElementById("dataIntervento").value,
+        tipoCliente: document.getElementById("tipoCliente").value,
+        cliente: document.getElementById("cliente").value,
+        difetto: document.getElementById("difetto").value,
+        lavoro: document.getElementById("lavoro").value,
+        imponibile: document.getElementById("imponibile").textContent,
+        iva: document.getElementById("iva").textContent,
+        totale: document.getElementById("totale").textContent,
+        signatureClient: document.getElementById("signatureClientData").value,
+        signatureTech: document.getElementById("signatureTechData").value
+      };
+      const blob = new Blob([JSON.stringify(data,null,2)], {type:"application/json"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "rapporto.json";
+      a.click();
+    }
+
+    // ===== Init =====
+    window.onload = ()=>{
+      initSignaturePad('signatureClient','signatureClientData');
+      initSignaturePad('signatureTech','signatureTechData');
+      updateTotals();
+    }
+  </script>
+</body>
+</html>
