@@ -10,8 +10,8 @@
     body{background:var(--bg);padding:24px;color:#111827}
     .container{max-width:1100px;margin:0 auto}
     .card{background:var(--card);border-radius:12px;padding:18px 20px;box-shadow:0 6px 18px rgba(15,23,42,0.06)}
-    header{display:flex;gap:16px;align-items:center;margin-bottom:12px;justify-content:space-between}
-    h1{font-size:18px;margin:0}
+    header{display:flex;flex-direction:column;align-items:center;margin-bottom:12px;}
+    h1{font-size:18px;margin:10px 0 0 0}
     .flex{display:flex;gap:12px}
     .col{flex:1}
     label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
@@ -26,7 +26,7 @@
     .btn{background:var(--accent);color:white;padding:8px 12px;border-radius:8px;border:0;cursor:pointer}
     .btn.ghost{background:transparent;color:var(--accent);border:1px solid #dbeafe}
     .small{font-size:13px;padding:6px 8px}
-    .actions{display:flex;gap:8px;align-items:center}
+    .actions{display:flex;gap:8px;align-items:center;justify-content:center;margin-top:20px}
     .total-card{margin-top:12px;padding:12px;border-radius:10px;background:#f8fafc}
     .total-card div{margin:4px 0}
     .print-hide{display:inline-block}
@@ -41,18 +41,9 @@
   <div class="container">
     <div class="card" id="reportCard">
       <header>
-        <div style="flex:1">
-          <h1>Rapporto di Intervento</h1>
-          <div class="muted">Compilare i campi sottostanti</div>
-        </div>
-        <div style="text-align:right">
-          <img src="logo.jpg" alt="Logo" style="max-height:60px;object-fit:contain" />
-        </div>
-        <div class="actions print-hide">
-          <button class="btn small" onclick="print()">Stampa / Salva PDF</button>
-          <button class="btn small" onclick="exportJSON()">Esporta JSON</button>
-          <button class="btn small ghost" onclick="clearForm()">Azzera</button>
-        </div>
+        <img src="logo.jpg" alt="Logo" style="max-height:120px;object-fit:contain" />
+        <h1>Rapporto di Intervento</h1>
+        <div class="muted">Compilare i campi sottostanti</div>
       </header>
 
       <!-- Dati intervento -->
@@ -167,6 +158,14 @@
           <button class="btn small ghost print-hide" onclick="clearSignature('signatureTech')">Pulisci firma</button>
         </div>
       </footer>
+
+      <!-- Pulsanti in basso -->
+      <div class="actions print-hide">
+        <button class="btn small" onclick="print()">Stampa / Salva PDF</button>
+        <button class="btn small" onclick="exportJSON()">Esporta JSON</button>
+        <button class="btn small ghost" onclick="clearForm()">Azzera</button>
+      </div>
+
     </div>
   </div>
 
@@ -186,7 +185,6 @@
     // ===== Calcoli =====
     function updateTotals(){
       let imponibile = 0;
-
       document.querySelectorAll("#articoliTable tbody tr").forEach(row=>{
         const qty = parseFloat(row.cells[1].querySelector("input").value)||0;
         const price = parseFloat(row.cells[2].querySelector("input").value)||0;
@@ -194,7 +192,6 @@
         row.cells[3].textContent = total.toFixed(2);
         imponibile += total;
       });
-
       document.querySelectorAll("#extraTable tbody tr").forEach(row=>{
         const qty = parseFloat(row.cells[1].querySelector("input").value)||0;
         const price = parseFloat(row.cells[2].querySelector("input").value)||0;
@@ -202,7 +199,6 @@
         row.cells[3].textContent = total.toFixed(2);
         imponibile += total;
       });
-
       const iva = imponibile*0.22;
       const totale = imponibile+iva;
       document.getElementById("imponibile").textContent = imponibile.toFixed(2);
@@ -219,7 +215,6 @@
       ctx.strokeStyle = '#000';
       ctx.lineWidth = 2;
       let drawing = false;
-
       function resizeCanvas(){
         const data = canvas.toDataURL();
         canvas.width = canvas.offsetWidth;
@@ -230,16 +225,12 @@
       }
       window.addEventListener('resize', resizeCanvas);
       resizeCanvas();
-
       function start(e){ drawing = true; ctx.beginPath(); ctx.moveTo(getX(e), getY(e)); }
       function draw(e){ if(!drawing) return; ctx.lineTo(getX(e), getY(e)); ctx.stroke(); updateHidden(); }
       function end(){ drawing = false; updateHidden(); }
-
       function getX(e){ return (e.touches? e.touches[0].clientX : e.clientX) - canvas.getBoundingClientRect().left; }
       function getY(e){ return (e.touches? e.touches[0].clientY : e.clientY) - canvas.getBoundingClientRect().top; }
-
       function updateHidden(){ hidden.value = canvas.toDataURL(); }
-
       canvas.addEventListener('mousedown', start);
       canvas.addEventListener('mousemove', draw);
       canvas.addEventListener('mouseup', end);
@@ -248,7 +239,6 @@
       canvas.addEventListener('touchmove', draw);
       canvas.addEventListener('touchend', end);
     }
-
     function clearSignature(id){
       const canvas = document.getElementById(id);
       const ctx = canvas.getContext('2d');
